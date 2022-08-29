@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+
+<!-- robot namespace -->
+<arg name="robot_1" default="multijackal_01" />
+<arg name="robot_2" default="multijackal_02" />
+<arg name="robot_3" default="multijackal_03" />
+
+<arg name="tf_topic" default="/tf" />
+<arg name="tf_static_topic" default="/tf_static" />
+
+<!-- ROS parameters -->
+<rosparam>use_sim_time: true</rosparam>
+
+<group ns="elastic_map_merge">
+  <node pkg="elastic_map_merge_3d" type="elastic_map_merge_node" respawn="true" name="elastic_map_merge_3d" output="screen">
+    <!-- remap tf topics to merged ones -->
+    <remap from="/tf" to="/tf" />
+    <remap from="/tf_static" to="/tf_static" />
+
+    <param name="robot_kf_topic" value="keyframes"/>
+    <param name="robot_namespace" value="multijackal_0"/>
+    <param name="merged_map_topic" value="merged_map_3d"/>
+    <param name="markers_topic" value="markers"/>
+    <param name="world_frame" value="map"/>
+    <param name="compositing_rate" value="1.0"/>
+    <param name="discovery_rate" value="0.05"/>
+    <param name="loop_detection_rate" value="0.07"/>
+    <param name="publish_tf" value="true"/>
+    
+    <param name="g2o_solver_type" value="lm_var" />
+
+    <!-- fix first node for optimization stability -->
+    <param name="fix_first_node" value="true"/>
+    <param name="fix_first_node_stddev" value="10 10 10 1 1 1"/>
+    <param name="fix_first_node_adaptive" value="true"/>
+    
+    <!-- ground plane -->
+    <param name="floor_edge_robust_kernel" value="NONE" />
+    <param name="floor_edge_robust_kernel_size" value="1.0" />
+    <param name="floor_edge_stddev" value="10.0" />
+
+    <!-- scan matching -->
+    <!-- robust kernels: NONE, Cauchy, DCS, Fair, GemanMcClure, Huber, PseudoHuber, Saturated, Tukey, Welsch -->
+    <param name="odometry_edge_robust_kernel" value="NONE" />
+    <param name="odometry_edge_robust_kernel_size" value="1.0" />
+    
+    <!-- loop detection parameters -->
+    <param name="distance_thresh" value="10.0" />
+    <param name="accum_distance_thresh" value="15.0" />
+    <param name="min_edge_interval" value="5.0" />
+    <param name="fitness_score_thresh" value="0.5" />
+    <param name="registration_method" value="FAST_VGICP"/>
+
+    <!-- and all the other map merging parameters -->
+    <param name="resolution" value="0.1"/>
+    <param name="outliers_min_neighbours" value="100"/>
+    <param name="max_iterations" value="100"/>
+    <param name="inlier_threshold" value="6.0"/>
+    <param name="refine_transform" value="1"/>
+    <param name="transform_epsilon" value="0.01"/>
+    <param name="normal_radius" value="0.3"/>
+    <param name="descriptor_radius" value="0.8" />
+    <param name="matching_k" value="15" />
+    <param name="confidence_threshold" value="6.8"/>
+    <param name="output_resolution" value="0.01"/>
+    <param name="keypoint_threshold" value="0.01" />
+    <param name="reg_step_size" value="0.1" />
+    <param name="reg_resolution" value="1.0" />
+    <param name="filter_z_min" value="0.3" />
+    <param name="filter_z_max" value="5.0" />
+    <param name="reference_frame" value="FIRST" /> <!-- AUTO, FIRST-->
+  </node>
+
+</group>
+  
+</launch>
