@@ -211,7 +211,11 @@ void ElasticMapMerge3d::KFMapCompositing()
     return;
   }
 
-  // publish the merged map to merged map topic
+  // process the merged map to remove noise outliers
+  merged_map = removeOutliers(merged_map, map_merge_params_.descriptor_radius,
+                              map_merge_params_.outliers_min_neighbours);
+
+  // publish the cleaned merged map to merged map topic
   std_msgs::Header merged_header;
   merged_header.frame_id = world_frame_;
   merged_header.stamp = ros::Time::now();

@@ -3,6 +3,7 @@
 
 #include <pcl/common/transforms.h>
 #include <pcl/console/parse.h>
+#include <pcl/filters/radius_outlier_removal.h>
 
 namespace elastic_map_merge_3d
 {
@@ -111,6 +112,22 @@ PointCloudPtr composeMapFromKFs(const std::vector<KeyFrameSnapshot::Ptr> &keyfra
   // result = downSample(result, resolution);
 
   return cloud_aligned;
+}
+
+/* Use a RadiusOutlierRemoval filter to remove all points with too few local
+ * neighbors */
+PointCloudPtr removeOutliers(const PointCloudConstPtr &input, double radius,
+                             int min_neighbors)
+{
+  pcl::RadiusOutlierRemoval<PointT> filter;
+  filter.setInputCloud(input);
+  filter.setRadiusSearch(radius);
+  filter.setMinNeighborsInRadius(min_neighbors);
+
+  PointCloudPtr output(new PointCloud);
+  filter.filter(*output);
+
+  return output;
 }
 
 }  // namespace elastic_map_merge_3d

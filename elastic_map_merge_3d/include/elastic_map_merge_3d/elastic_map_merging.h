@@ -77,6 +77,9 @@ std::ostream &operator<<(std::ostream &stream, const MapMergingParams &params);
 PointCloudPtr composeMapFromKFs(const std::vector<KeyFrameSnapshot::Ptr> &keyframes_snapshot,
                                  double resolution);
 
+PointCloudPtr removeOutliers(const PointCloudConstPtr &input, double radius,
+                             int min_neighbors);
+
 }  // namespace elastic_map_merge_3d
 
 #endif  // ELASTIC_MAP_MERGE_3D_ELASTIC_MAP_MERGING_H_
