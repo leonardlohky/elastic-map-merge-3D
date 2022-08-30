@@ -47,6 +47,7 @@ ElasticMapMerge3d::ElasticMapMerge3d() : subscriptions_size_(0), map2odom_subscr
   private_nh.param<std::string>("markers_topic", markers_topic, "markers");
   private_nh.param<std::string>("world_frame", world_frame_, "map");
   private_nh.param("publish_tf", publish_tf, true);
+  private_nh.param("use_floor_information", use_floor_information, false);
 
   private_nh.param<bool>("fix_first_node", fix_first_node, false);
   private_nh.param<std::string>("fix_first_node_stddev", fix_first_node_stddev, "1 1 1 1 1 1");
@@ -251,16 +252,18 @@ bool ElasticMapMerge3d::flushRobotKeyframeQueues()
       Eigen::Isometry3d odom = odom2map * keyframe->odom;
       keyframe->node = graph_slam->add_se3_node(keyframe->odom);
 
-      // add floor plane coeffs info from keyframe into pose graph
-      if(!floor_plane_node) {
-        floor_plane_node = graph_slam->add_plane_node(Eigen::Vector4d(0.0, 0.0, 1.0, 0.0));
-        floor_plane_node->setFixed(true);
-      }
+      if(use_floor_information) {
+        // add floor plane coeffs info from keyframe into pose graph
+        if(!floor_plane_node) {
+          floor_plane_node = graph_slam->add_plane_node(Eigen::Vector4d(0.0, 0.0, 1.0, 0.0));
+          floor_plane_node->setFixed(true);
+        }
 
-      Eigen::Vector4d coeffs = *(keyframe->floor_coeffs);
-      Eigen::Matrix3d floor_information = Eigen::Matrix3d::Identity() * (1.0 / floor_edge_stddev);
-      auto plane_edge = graph_slam->add_se3_plane_edge(keyframe->node, floor_plane_node, coeffs, floor_information);
-      graph_slam->add_robust_kernel(plane_edge, floor_edge_robust_kernel, floor_edge_robust_kernel_size);
+        Eigen::Vector4d coeffs = *(keyframe->floor_coeffs);
+        Eigen::Matrix3d floor_information = Eigen::Matrix3d::Identity() * (1.0 / floor_edge_stddev);
+        auto plane_edge = graph_slam->add_se3_plane_edge(keyframe->node, floor_plane_node, coeffs, floor_information);
+        graph_slam->add_robust_kernel(plane_edge, floor_edge_robust_kernel, floor_edge_robust_kernel_size);
+      }
 
       // fix the first node
       if(anchor_node != nullptr) {
@@ -287,7 +290,7 @@ bool ElasticMapMerge3d::flushRobotKeyframeQueues()
       KeyFrame::Ptr prev_keyframe;
       if(i == 0) {
         // find last known keyframe with matching id in database; iterate from back
-        for(int j = keyframes_database.size() - 1; j >= 0; j--) {
+        for(int j = keyframes_database.size() - 1; j >= 0; --j) {
           if(keyframes_database[j]->robot_ns == keyframe->robot_ns) {
             prev_keyframe = keyframes_database[j];
             break;
@@ -517,7 +520,6 @@ void ElasticMapMerge3d::publishTF()
 
     }
   }
-
 
 }
 

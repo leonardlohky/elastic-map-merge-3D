@@ -89,6 +89,7 @@ private:
   int g2o_solver_num_iterations;
   g2o::VertexSE3* anchor_node;
   g2o::EdgeSE3* anchor_edge;
+  bool use_floor_information;
   g2o::VertexPlane* floor_plane_node;
   double floor_edge_stddev;
   std::vector<KeyFrame::Ptr> keyframes_database; // global server keyframe database

@@ -29,7 +29,9 @@
     <param name="loop_detection_rate" value="0.07"/>
     <param name="publish_tf" value="true"/>
     
+    <!-- g2o solver params -->
     <param name="g2o_solver_type" value="lm_var" />
+    <param name="g2o_solver_num_iterations" value="16" />
 
     <!-- fix first node for optimization stability -->
     <param name="fix_first_node" value="true"/>
@@ -37,6 +39,7 @@
     <param name="fix_first_node_adaptive" value="true"/>
     
     <!-- ground plane -->
+    <param name="use_floor_information" value="false" />
     <param name="floor_edge_robust_kernel" value="NONE" />
     <param name="floor_edge_robust_kernel_size" value="1.0" />
     <param name="floor_edge_stddev" value="10.0" />
