@@ -55,13 +55,6 @@ private:
     std::vector<KeyFrame::Ptr> keyframe_queue;
   };
 
-  struct LocalMap2OdomSubscription {
-    // protects map2odom
-    std::mutex mutex;
-    geometry_msgs::TransformStamped::ConstPtr map2odom_msg;
-    ros::Subscriber local_map2odom_sub;
-  };
-
   ros::NodeHandle node_;
 
   /* node parameters */
@@ -133,11 +126,6 @@ private:
   size_t subscriptions_size_;
   std::mutex subscriptions_mutex_;
 
-  // owns local map2odoms -- iterator safe
-  std::forward_list<LocalMap2OdomSubscription> map2odom_subscriptions_;
-  size_t map2odom_subscriptions_size_;
-  std::mutex map2odom_subscriptions_mutex_;
-
   std::vector<Eigen::Matrix4f> global_transforms_;
   std::mutex global_transforms_mutex_;
 
@@ -148,9 +136,6 @@ private:
   bool isRobotKFTopic(const ros::master::TopicInfo& topic);
   void KFUpdate(const Keyframes_Graph::ConstPtr& msg,
                  KFSubscription& subscription);
-  void LocalMap2OdomUpdate(const geometry_msgs::TransformStamped::ConstPtr& msg,
-                            LocalMap2OdomSubscription& subscription);
-  std::vector<tf::Transform> getLocalMap2Odoms();
   void updatePairwiseTransforms(std::vector<Eigen::Matrix4f> trans_update);
   void publishTF();
 

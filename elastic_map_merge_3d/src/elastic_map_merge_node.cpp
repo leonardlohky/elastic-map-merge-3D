@@ -23,7 +23,7 @@
 namespace elastic_map_merge_3d
 {
 
-ElasticMapMerge3d::ElasticMapMerge3d() : subscriptions_size_(0), map2odom_subscriptions_size_(0)
+ElasticMapMerge3d::ElasticMapMerge3d() : subscriptions_size_(0)
 {
   ros::NodeHandle private_nh("~");
   std::string merged_map_topic;
@@ -131,10 +131,6 @@ void ElasticMapMerge3d::discovery()
       subscriptions_.emplace_front();
       ++subscriptions_size_;
 
-      std::lock_guard<std::mutex> map2odom_lock(map2odom_subscriptions_mutex_);
-      map2odom_subscriptions_.emplace_front();
-      ++map2odom_subscriptions_size_;
-
       // update anchor robot namespace
       char delimiter = '/';
       std::string s;
@@ -173,19 +169,6 @@ void ElasticMapMerge3d::discovery()
         });
     subscription.keyframes_added_curr = 0; // init keyframes added counter
     ROS_INFO("Added KEYFRAME topic: %s.", kf_topic.c_str());
-
-    // no locking here.
-    LocalMap2OdomSubscription& map2odom_subscription = map2odom_subscriptions_.front();
-
-    /* subscribe callbacks for local keyframe graphs */
-    map2odom_topic = ros::names::append(robot_name, "/odom2pub");
-    ROS_INFO("Subscribing to LOCAL MAP2ODOM topic: %s.", map2odom_topic.c_str());
-    map2odom_subscription.local_map2odom_sub = node_.subscribe<geometry_msgs::TransformStamped>(
-        map2odom_topic, 50, [this, &map2odom_subscription](const geometry_msgs::TransformStamped::ConstPtr& msg) {
-          LocalMap2OdomUpdate(msg, map2odom_subscription);
-        });
-
-    ROS_INFO("Added LOCAL MAP2ODOM topic: %s.", kf_topic.c_str());
 
   }
 
@@ -423,45 +406,14 @@ void ElasticMapMerge3d::KFUpdate(const Keyframes_Graph::ConstPtr& msg,
   subscription.keyframes_added_curr += num_new_keyframes;
 }
 
-void ElasticMapMerge3d::LocalMap2OdomUpdate(const geometry_msgs::TransformStamped::ConstPtr& msg,
-                                            LocalMap2OdomSubscription& subscription)
-{
-  ROS_DEBUG("received map2odom update");
-  std::lock_guard<std::mutex> lock(subscription.mutex);
-
-  subscription.map2odom_msg = msg;
-}
-
-std::vector<tf::Transform> ElasticMapMerge3d::getLocalMap2Odoms()
-{
-  std::vector<tf::Transform> map2odoms_vec;
-    for(auto& subscription : map2odom_subscriptions_) {
-      // check if map2odom msg is present, i.e. topic is successfully subscribed to already
-      if(subscription.map2odom_msg) {
-        std::lock_guard<std::mutex> lock(subscription.mutex);
-        geometry_msgs::Transform map2odom_trans_msg = subscription.map2odom_msg->transform;
-
-        // Convert geometry_msgs::Transform to tf::Transform
-        tf::Transform transform_tf;
-        tf::transformMsgToTF(map2odom_trans_msg, transform_tf);
-        map2odoms_vec.push_back(transform_tf);
-      }
-
-    }
-
-  return map2odoms_vec;
-}
-
 void ElasticMapMerge3d::updatePairwiseTransforms(std::vector<Eigen::Matrix4f> trans_update)
 {
   ROS_INFO("Updating pairwise transforms to global frame");
 
-  // get local map2odoms transforms
-  std::vector<tf::Transform> local_map2odoms = getLocalMap2Odoms();
-  if(!local_map2odoms.empty() && !pairwise_transforms_.empty() && !trans_update.empty()) {
+  if(!pairwise_transforms_.empty() && !trans_update.empty()) {
     pairwise_transforms_mutex_.lock();
     for(int i = 0; i < trans_update.size(); i++) {
-      pairwise_transforms_[i] = matrix4d2transform(trans_update[i].matrix().cast<double>()) * local_map2odoms[i];
+      pairwise_transforms_[i] = matrix4d2transform(trans_update[i].matrix().cast<double>());
 
     }
 

@@ -30,6 +30,7 @@
     <param name="publish_tf" value="true"/>
     
     <!-- g2o solver params -->
+    <!-- typical solvers: gn_var, gn_fix6_3, gn_var_cholmod, lm_var, lm_fix6_3, lm_var_cholmod, ... -->
     <param name="g2o_solver_type" value="lm_var" />
     <param name="g2o_solver_num_iterations" value="16" />
 
