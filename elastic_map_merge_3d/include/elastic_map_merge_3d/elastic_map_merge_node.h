@@ -102,6 +102,12 @@ private:
   std::vector<KeyFrameSnapshot::Ptr> keyframes_snapshot;
   std::vector<std::vector<KeyFrameSnapshot::Ptr>> keyframes_snapshot_vec;
 
+  // init robot positions
+  std::map<std::string, Eigen::Isometry3d> robot_init_pos_info;
+  std::string robot_1_init_pos;
+  std::string robot_2_init_pos;
+  std::string robot_3_init_pos;
+
   // publishing
   ros::Publisher merged_map_publisher_;
   ros::Publisher markers_publisher;
@@ -134,6 +140,7 @@ private:
 
   std::string robotNameFromTopic(const std::string& topic);
   bool isRobotKFTopic(const ros::master::TopicInfo& topic);
+  void initRobotsStartPoses();
   void KFUpdate(const Keyframes_Graph::ConstPtr& msg,
                  KFSubscription& subscription);
   void updatePairwiseTransforms(std::vector<Eigen::Matrix4f> trans_update);

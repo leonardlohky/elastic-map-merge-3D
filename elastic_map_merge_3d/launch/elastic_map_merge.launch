@@ -52,10 +52,16 @@
     
     <!-- loop detection parameters -->
     <param name="distance_thresh" value="10.0" />
+    <param name="height_distance_thresh" value="0.3" />
     <param name="accum_distance_thresh" value="15.0" />
     <param name="min_edge_interval" value="5.0" />
     <param name="fitness_score_thresh" value="0.5" />
     <param name="registration_method" value="FAST_VGICP"/>
+
+    <!-- robot init starting pos -->
+    <param name="robot_1_init_pos" value="0 0 0 0 0 0"/>
+    <param name="robot_2_init_pos" value=""/>
+    <param name="robot_3_init_pos" value=""/>
 
     <!-- and all the other map merging parameters -->
     <param name="resolution" value="0.1"/>

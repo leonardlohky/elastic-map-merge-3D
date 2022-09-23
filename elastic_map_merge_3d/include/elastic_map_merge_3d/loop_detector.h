@@ -39,6 +39,7 @@ public:
    */
   LoopDetector(ros::NodeHandle& pnh) {
     distance_thresh = pnh.param<double>("distance_thresh", 5.0);
+    height_distance_thresh = pnh.param<double>("height_distance_thresh", 1.0);
     accum_distance_thresh = pnh.param<double>("accum_distance_thresh", 8.0);
     distance_from_last_edge_thresh = pnh.param<double>("min_edge_interval", 5.0);
 
@@ -91,6 +92,13 @@ private:
     for(const auto& k : keyframes) {
       // traveled distance between keyframes is too small
       if(new_keyframe->accum_distance - k->accum_distance < accum_distance_thresh) {
+        continue;
+      }
+
+      // height distance between keyframes is too large
+      Eigen::Vector3d trans_k = k->odom.translation();
+      Eigen::Vector3d trans_new_keyframe = new_keyframe->odom.translation();;
+      if(abs(trans_new_keyframe.z() - trans_k.z()) < height_distance_thresh) {
         continue;
       }
 
@@ -173,6 +181,7 @@ private:
 
 private:
   double distance_thresh;                 // estimated distance between keyframes consisting a loop must be less than this distance
+  double height_distance_thresh;          // estimated height distance between keyframes consisting a loop must be less than this distance
   double accum_distance_thresh;           // traveled distance between ...
   double distance_from_last_edge_thresh;  // a new loop edge must far from the last one at least this distance
 

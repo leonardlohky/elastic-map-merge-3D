@@ -67,8 +67,15 @@ ElasticMapMerge3d::ElasticMapMerge3d() : subscriptions_size_(0)
   private_nh.param<double>("fitness_score_thresh", 0.5);
   private_nh.param<std::string>("registration_method", registration_method, "FAST_VGICP");
 
+  private_nh.param<std::string>("robot_1_init_pos", robot_1_init_pos, "");
+  private_nh.param<std::string>("robot_2_init_pos", robot_2_init_pos, "");
+  private_nh.param<std::string>("robot_3_init_pos", robot_3_init_pos, "");
+
   // registration parameters
   map_merge_params_ = MapMergingParams::fromROSNode(private_nh);
+
+  // robot init pose database
+  initRobotsStartPoses();
 
   /* publishing */
   merged_map_publisher_ =
@@ -95,6 +102,102 @@ ElasticMapMerge3d::ElasticMapMerge3d() : subscriptions_size_(0)
         rate.sleep();
       }
     });
+  }
+
+}
+
+void ElasticMapMerge3d::initRobotsStartPoses()
+{
+  if(!robot_1_init_pos.empty()) {
+    Eigen::Isometry3d robot_1_init_pos_mat = Eigen::Isometry3d::Identity();
+
+    std::stringstream sst(robot_1_init_pos);
+    for(int i = 0; i < 3; i++) {
+        double t_val = 1.0;
+        sst >> t_val;
+
+        if(t_val > 0 || t_val < 0) {
+          robot_1_init_pos_mat(i, 3) = t_val;
+        }
+
+    }
+
+    for(int j = 0; j < 3; j++) {
+        double rot_val = 1.0;
+        sst >> rot_val;
+
+        if(rot_val > 0 || rot_val < 0) {
+          robot_1_init_pos_mat(j, j) = rot_val;
+        }
+
+    }
+
+    std::string robot_key = robot_namespace_ + "1";
+    robot_init_pos_info.insert(std::make_pair(robot_key, robot_1_init_pos_mat));
+
+  }
+
+
+  if(!robot_2_init_pos.empty()) {
+    Eigen::Isometry3d robot_2_init_pos_mat = Eigen::Isometry3d::Identity();
+
+    std::stringstream sst(robot_2_init_pos);
+    for(int i = 0; i < 3; i++) {
+        double t_val = 1.0;
+        sst >> t_val;
+
+        if(t_val > 0 || t_val < 0) {
+          robot_2_init_pos_mat(i, 3) = t_val;
+        }
+
+    }
+
+    for(int j = 0; j < 3; j++) {
+        double rot_val = 1.0;
+        sst >> rot_val;
+
+        if(rot_val > 0 || rot_val < 0) {
+          robot_2_init_pos_mat(j, j) = rot_val;
+        }
+
+    }
+
+    std::string robot_key = robot_namespace_ + "2";
+    robot_init_pos_info.insert(std::make_pair(robot_key, robot_2_init_pos_mat));
+
+  }
+
+  if(!robot_3_init_pos.empty()) {
+    Eigen::Isometry3d robot_3_init_pos_mat = Eigen::Isometry3d::Identity();
+
+    std::stringstream sst(robot_3_init_pos);
+    for(int i = 0; i < 3; i++) {
+        double t_val = 1.0;
+        sst >> t_val;
+
+        if(t_val > 0 || t_val < 0) {
+          robot_3_init_pos_mat(i, 3) = t_val;
+        }
+
+    }
+
+    for(int j = 0; j < 3; j++) {
+        double rot_val = 1.0;
+        sst >> rot_val;
+
+        if(rot_val > 0 || rot_val < 0) {
+          robot_3_init_pos_mat(j, j) = rot_val;
+        }
+
+    }
+
+    std::string robot_key = robot_namespace_ + "3";
+    robot_init_pos_info.insert(std::make_pair(robot_key, robot_3_init_pos_mat));
+
+  }
+
+  for(const auto& elem : robot_init_pos_info) {
+    std::cout << elem.first << " " << elem.second.matrix() << std::endl;
   }
 
 }
@@ -225,6 +328,15 @@ bool ElasticMapMerge3d::flushRobotKeyframeQueues()
     auto tf_trans = pairwise_transforms_[map2odom_idx];
     pairwise_transforms_mutex_.unlock();
 
+    // get init pose transform
+    std::string robot_id = robots_namespace_order_[map2odom_idx];
+    Eigen::Isometry3d robot_init_trans = Eigen::Isometry3d::Identity();
+    for (const auto& it : robot_init_pos_info) {
+      if (it.first == robot_id) {
+        robot_init_trans = it.second;
+      }
+    }
+    
     Eigen::Isometry3d odom2map;
     tf::transformTFToEigen(tf_trans, odom2map);
 
@@ -236,11 +348,11 @@ bool ElasticMapMerge3d::flushRobotKeyframeQueues()
       temp_keyframe_queue.push_back(keyframe);
 
       // add pose node
-      Eigen::Isometry3d odom = odom2map * keyframe->odom;
-      keyframe->node = graph_slam->add_se3_node(keyframe->odom);
+      Eigen::Isometry3d odom = odom2map * keyframe->odom * robot_init_trans;
+      keyframe->node = graph_slam->add_se3_node(odom);
 
+      // add floor plane coeffs info from keyframe into pose graph
       if(use_floor_information) {
-        // add floor plane coeffs info from keyframe into pose graph
         if(!floor_plane_node) {
           floor_plane_node = graph_slam->add_plane_node(Eigen::Vector4d(0.0, 0.0, 1.0, 0.0));
           floor_plane_node->setFixed(true);
