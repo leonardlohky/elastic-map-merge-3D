@@ -98,7 +98,7 @@ private:
       // height distance between keyframes is too large
       Eigen::Vector3d trans_k = k->odom.translation();
       Eigen::Vector3d trans_new_keyframe = new_keyframe->odom.translation();;
-      if(abs(trans_new_keyframe.z() - trans_k.z()) < height_distance_thresh) {
+      if(abs(trans_new_keyframe.z() - trans_k.z()) > height_distance_thresh) {
         continue;
       }
 
