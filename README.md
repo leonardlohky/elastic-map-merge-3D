@@ -5,6 +5,7 @@
 ## Installing
 As ***elastic_map_merge_3d*** merges 3D point clouds through a keyframe loop detection process, a 3D SLAM algorithm that can output keyframe messages is required. A modified version of ***hdl_graph_slam*** has been created to output keyframe messages for the map-merger process. Download and install the modified ***hdl_graph_slam*** package according to the repository instructions here:
 - [hdl_graph_slam](https://github.com/leonardlohky/hdl_graph_slam)
+
 Note that if you want to perform map-merging in real-time on actual robots, then ***hdl_graph_slam*** needs to be installed on each individual robot involved.
 
 The following ROS packages are required for ***elastic_map_merge_3d*** package:
