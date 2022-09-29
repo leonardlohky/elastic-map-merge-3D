@@ -64,23 +64,9 @@
     <param name="robot_3_init_pos" value=""/>
 
     <!-- and all the other map merging parameters -->
-    <param name="resolution" value="0.1"/>
     <param name="outliers_min_neighbours" value="100"/>
-    <param name="max_iterations" value="100"/>
-    <param name="inlier_threshold" value="6.0"/>
-    <param name="refine_transform" value="1"/>
-    <param name="transform_epsilon" value="0.01"/>
-    <param name="normal_radius" value="0.3"/>
     <param name="descriptor_radius" value="0.8" />
-    <param name="matching_k" value="15" />
-    <param name="confidence_threshold" value="6.8"/>
     <param name="output_resolution" value="0.01"/>
-    <param name="keypoint_threshold" value="0.01" />
-    <param name="reg_step_size" value="0.1" />
-    <param name="reg_resolution" value="1.0" />
-    <param name="filter_z_min" value="0.3" />
-    <param name="filter_z_max" value="5.0" />
-    <param name="reference_frame" value="FIRST" /> <!-- AUTO, FIRST-->
   </node>
 
 </group>
