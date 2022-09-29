@@ -31,8 +31,8 @@
     
     <!-- g2o solver params -->
     <!-- typical solvers: gn_var, gn_fix6_3, gn_var_cholmod, lm_var, lm_fix6_3, lm_var_cholmod, ... -->
-    <param name="g2o_solver_type" value="lm_var" />
-    <param name="g2o_solver_num_iterations" value="16" />
+    <param name="g2o_solver_type" value="lm_var_cholmod" />
+    <param name="g2o_solver_num_iterations" value="8" />
 
     <!-- fix first node for optimization stability -->
     <param name="fix_first_node" value="true"/>
@@ -51,11 +51,11 @@
     <param name="odometry_edge_robust_kernel_size" value="1.0" />
     
     <!-- loop detection parameters -->
-    <param name="distance_thresh" value="10.0" />
-    <param name="height_distance_thresh" value="0.3" />
-    <param name="accum_distance_thresh" value="15.0" />
-    <param name="min_edge_interval" value="5.0" />
-    <param name="fitness_score_thresh" value="0.5" />
+    <param name="distance_thresh" value="1.0" />
+    <param name="height_distance_thresh" value="0.5" />
+    <param name="accum_distance_thresh" value="3.0" />
+    <param name="min_edge_interval" value="1.0" />
+    <param name="fitness_score_thresh" value="0.2" />
     <param name="registration_method" value="FAST_VGICP"/>
 
     <!-- robot init starting pos -->
