@@ -19,6 +19,23 @@ cd ..
 catkin_make
 ```
 ## Process
+The map merger process is based on keyframe matching, and generates the merged map subsequently from the keyframes stored in its database.
+
+First, the map merger package attempts to locate robots that are involved in the multi-mapping session based on a given prefix namespace (e.g. `robot_0`). Upon discovery of new robots, the package subscribes to the robot's keyframe topic, which contains all the local keyframes for that particular robot. The keyframe topic is published by the `hdl_graph_slam` package, and each keyframe contains the following data: <br>
+
+|  Parameter Name |       Meaning     |    Type   |
+|:---------------:|:-----------------:|:------------:|
+| robot_ns | Robot namespace | string | 
+| pose | Pose information of the keyframe | geometry_msgs/Pose |
+| accum_distance | Accumulated travel distance | float64 |
+| cloud | Keyframe pointcloud | sensor_msgs/PointCloud2 |
+| floor_coeffs | Floor coefficients defining the floor plane for the keyframe | float64[4] |
+
+After that, the map merger will periodically check the keyframe topic of each robot and see if there are new keyframes that have not been processed. If so, it will initiate a pose node in the pose graph and add a constraint between the last latest subsequent keyframe with the same `robot_ns` entry. For example, if the current keyframe has a `robot_ns` of "robot_01", the package will search through its database to find the latest keyframe with the same `robot_ns` of "robot_01" and add a constraint between the two.
+
+Following that, each new keyframe will then be processed to find if they are a potential loop closure candidate based on several threshold checks. Identified candidates will then be compared against each stored keyframe in the system's database via pointcloud matching. If the matching score passes the set fitness score threshold, it is postively identified as a loop closure instance. The relative pose between the matching keyframes is obtained to act as a new constraint and added the pose graph. Once all new keyframes have been processed, pose graph optimization is done.
+
+Finally, to get the merged map, it takes a snapshot of the updated keyframe database and joins up all the keyframes as one single merged pointcloud. This merged pointcloud is then published as a topic to ROS.
 
 The map merger process used for this package is illustrated below:
 <img src="imgs/elastic_map_merge_3d_process.png" width="712pix" />
