@@ -18,6 +18,10 @@ git clone https://github.com/leonardlohky/elastic_map_merge_3d
 cd ..
 catkin_make
 ```
+## Process
+
+The map merger process used for this package is illustrated below:
+<img src="imgs/elastic_map_merge_3d_process.png" width="712pix" />
 
 ## Execution
 
@@ -51,6 +55,14 @@ To execute the process, simply run the launch file. Remember to source for the w
 ```bash
 roslaunch elastic_map_merge_3d elastic_map_merge.launch
 ```
+
+## Troubleshooting
+
+### The whole pose graph and map suddenly shifts
+This issue is caused by the `g2o_solver_num_iterations` parameter under the g2o solver. It appears the higher the number of iterations, the more likely this issue will occur. To fix this, reduce the number of iterations.
+
+### The maps are not merging
+Check that the `use_floor_information` parameter in the launch file is set to false. For some reason, if the map merger uses floor information from the keyframes to add constraints to the pose graph, the maps will not merge even though loop closures are successfully detected. I am not sure as to the reason why map merger will not happen if floor information is used even though it worked for the original `hdl_graph_slam` package. If anyone manages to figure out the reason, do let me know.
 
 ## Copyright
 
