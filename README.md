@@ -38,7 +38,7 @@ Following that, each new keyframe will then be processed to find if they are a p
 Finally, to get the merged map, it takes a snapshot of the updated keyframe database and joins up all the keyframes as one single merged pointcloud. This merged pointcloud is then published as a topic to ROS.
 
 The map merger process used for this package is illustrated below:
-<img src="imgs/elastic_map_merge_3d_process.png" width="712pix" />
+<img src="imgs/elastic_map_merge_3d_process.png" />
 
 ## Execution
 
